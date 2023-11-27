@@ -97,11 +97,22 @@ export class FileInfo extends React.Component<FileInfoProps, FileInfoState> {
         if ((asset as SpriteSheet).spriteCount != undefined) {
             const encoded = encodeSpriteSheet(asset as SpriteSheet);
 
+            if (this.builder.state.isSimpleExport) {
+                return encoded.map((e, i) => `${e.img}`).join("\n,")
+            }
+            else {
             return encoded.map((e, i) => `const ${asset.identifier}_${i} = ${e.img};`).join("\n\n")
+            }
+            
         }
         else {
             const encoded = encodeSprite(asset as Sprite);
+            if (this.builder.state.isSimpleExport) {
+                return `${encoded.img}`
+            }
+            else {
             return `const ${asset.identifier} = ${encoded.img};`
+            }
         }
     }
 
@@ -118,6 +129,7 @@ interface AssetBuilderProps {
 
 interface AssetBuilderState {
     isSpriteSheet: boolean;
+    isSimpleExport: boolean;
     palette: string;
 
     identifier: FieldValue;
@@ -146,6 +158,7 @@ export class AssetBuilder extends React.Component<AssetBuilderProps, AssetBuilde
 
         this.state = {
             isSpriteSheet: false,
+            isSimpleExport: false,
             palette: undefined,
             identifier: { text: util.escapeIdentifier(props.basename) },
             spriteWidth: { text: "16" },
@@ -201,6 +214,7 @@ export class AssetBuilder extends React.Component<AssetBuilderProps, AssetBuilde
             <Form>
                 <Form.Field>
                     <Checkbox toggle label="Sprite sheet" value={this.state.isSpriteSheet + ""} onChange={this.handleCheckboxChange("isSpriteSheet")} />
+                    <Checkbox toggle label="simple export" value={this.state.isSimpleExport + ""} onChange={this.handleCheckboxChange("isSimpleExport")} />
                 </Form.Field>
                 <Form.Field
                     control={Input}
